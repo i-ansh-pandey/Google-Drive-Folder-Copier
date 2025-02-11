@@ -35,7 +35,7 @@ flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
 flow = Flow.from_client_secrets_file(
     CREDENTIALS_PATH,
     scopes=SCOPES,
-    redirect_uri="http://127.0.0.1:8000/callback"  # FIXED to match your app
+    redirect_uri="https://google-drive-folder-copier.onrender.com/callback"  # FIXED to match your app
 )
 
 TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
