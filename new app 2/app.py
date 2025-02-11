@@ -15,8 +15,9 @@ app.secret_key = "your_secret_key"  # Change this for security
 
 # Google OAuth Config
 CLIENT_SECRETS_FILE = "credentials.json"
-flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
+
 SCOPES = ["https://www.googleapis.com/auth/drive"]
+flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
 
 # OAuth flow
 flow = Flow.from_client_secrets_file(
