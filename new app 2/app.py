@@ -12,7 +12,7 @@ from authlib.integrations.flask_client import OAuth
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # ✅ Initialize Flask app
-app = Flask(__name__)
+app = Flask(__name__, template_folder='templates')
 app.secret_key = "your_secret_key"  # Change this for security 
 
 # ✅ Step 1: Create `credentials.json` from Environment Variable
@@ -42,7 +42,7 @@ TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templat
 @app.route("/")
 def home():
     if "credentials" not in session:
-        return render_template("login.html", template_folder=TEMPLATE_DIR)  # Show login page
+        return render_template("login.html")  # Show login page
     return redirect(url_for("list_folders"))
 
 @app.route("/login")
