@@ -1,6 +1,7 @@
 from flask import Flask, redirect, url_for, session, render_template, request, jsonify
 import os
 import google.auth
+from google_auth_oauthlib.flow import InstalledAppFlow
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
@@ -13,7 +14,8 @@ app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Change this for security 
 
 # Google OAuth Config
-# CLIENT_SECRETS_FILE = "credentials.json"
+CLIENT_SECRETS_FILE = "credentials.json"
+flow = InstalledAppFlow.from_client_secrets_file(CLIENT_SECRETS_FILE, SCOPES)
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 # OAuth flow
