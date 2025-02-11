@@ -8,28 +8,28 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from authlib.integrations.flask_client import OAuth
 
-#  Ensure Flask uses HTTP (Only for Local Dev, Remove for Production)
+# ✅ Ensure Flask uses HTTP (Only for Local Dev, Remove for Production)
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
-#  Initialize Flask app
+# ✅ Initialize Flask app
 app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Change this for security 
 
-#  Step 1: Create `credentials.json` from Environment Variable
+# ✅ Step 1: Create `credentials.json` from Environment Variable
 CREDENTIALS_PATH = "credentials.json"
 credentials_json = os.getenv("GOOGLE_CREDENTIALS")  # Get credentials from Render env
 
 if not credentials_json:
     raise ValueError("⚠️ Error: GOOGLE_CREDENTIALS environment variable is missing.")
 
-#  Write the credentials JSON file
+# ✅ Write the credentials JSON file
 with open(CREDENTIALS_PATH, "w") as file:
     file.write(credentials_json)
 
-#  Google OAuth Config
+# ✅ Google OAuth Config
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
-#  Initialize OAuth flow
+# ✅ Initialize OAuth flow
 flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_PATH, SCOPES)
 
 flow = Flow.from_client_secrets_file(
@@ -58,7 +58,7 @@ def callback():
     if "code" not in request.args:
         return "Error: Missing code parameter", 400  # Handle error properly
 
-    #  Fetch token using the authorization response
+    # ✅ Fetch token using the authorization response
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
     session["credentials"] = credentials_to_dict(credentials)  # Store in session
