@@ -4,12 +4,13 @@ import google.auth
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
+from authlib.integrations.flask_client import OAuth
 
 os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 # Initialize Flask app
 app = Flask(__name__)
-app.secret_key = "secret_key"  # Change this for security 
+app.secret_key = "your_secret_key"  # Change this for security 
 
 # Google OAuth Config
 CLIENT_SECRETS_FILE = "credentials.json"
@@ -19,7 +20,7 @@ SCOPES = ["https://www.googleapis.com/auth/drive"]
 flow = Flow.from_client_secrets_file(
     CLIENT_SECRETS_FILE,
     scopes=SCOPES,
-    redirect_uri="http://127.0.0.1:5000/callback"
+    redirect_uri="http://127.0.0.1:8000/callback"  # FIXED to match your app
 )
 
 @app.route("/")
@@ -27,16 +28,13 @@ def home():
     if "credentials" not in session:
         return render_template("login.html")  # Show login page
     return redirect(url_for("list_folders"))
-    return "Google Drive Folder Copier is running!"
-
 
 @app.route("/login")
 def login():
     """Redirect user to Google's OAuth 2.0 login page"""
     authorization_url, state = flow.authorization_url(prompt="consent")
     session["state"] = state  # Store state in session
-    return render_template("login.html")
-    return redirect(authorization_url)
+    return redirect(authorization_url)  # FIXED: Properly redirect
 
 @app.route("/callback")
 def callback():
@@ -45,9 +43,10 @@ def callback():
     if "code" not in request.args:
         return "Error: Missing code parameter", 400  # Handle error properly
 
+    # FIXED: Fetch the token using the authorization response
     flow.fetch_token(authorization_response=request.url)
     credentials = flow.credentials
-    session["credentials"] = credentials_to_dict(credentials)
+    session["credentials"] = credentials_to_dict(credentials)  # Store in session
 
     return redirect(url_for("list_folders"))  # Redirect after login
 
@@ -55,7 +54,7 @@ def callback():
 def list_folders():
     """List user's Google Drive folders"""
     if "credentials" not in session:
-        return render_template("login.html")  # Redirect user to login
+        return redirect(url_for("login"))  # Redirect to login
     
     credentials = Credentials(**session["credentials"])
     drive_service = build("drive", "v3", credentials=credentials)
@@ -68,7 +67,6 @@ def list_folders():
     
     return render_template("folders.html", folders=folders)
 
-
 def credentials_to_dict(credentials):
     return {
         "token": credentials.token,
@@ -79,73 +77,5 @@ def credentials_to_dict(credentials):
         "scopes": credentials.scopes
     }
 
-@app.route("/copy-folder/<folder_id>", methods=["POST"])
-def copy_folder(folder_id):
-    """Copy a Google Drive folder and its contents"""
-    try:
-        credentials = Credentials(**session["credentials"])
-        drive_service = build("drive", "v3", credentials=credentials)
-
-        # Get folder name
-        folder = drive_service.files().get(fileId=folder_id, fields="name").execute()
-        new_folder_metadata = {
-            "name": folder["name"] + " - Copy",
-            "mimeType": "application/vnd.google-apps.folder",
-            "parents": ["root"]  # Change this to another folder ID if needed
-        }
-        new_folder = drive_service.files().create(body=new_folder_metadata, fields="id").execute()
-        new_folder_id = new_folder["id"]
-
-        # Get all files and subfolders in the original folder
-        results = drive_service.files().list(
-            q=f"'{folder_id}' in parents and trashed=false",
-            fields="files(id, name, mimeType)"
-        ).execute()
-        items = results.get("files", [])
-
-        # Copy each file or folder
-        for item in items:
-            if item["mimeType"] == "application/vnd.google-apps.folder":
-                copy_subfolder(drive_service, item["id"], new_folder_id)
-            else:
-                copy_file(drive_service, item["id"], item["name"], new_folder_id)
-
-        return jsonify({"message": "Folder copied successfully!", "new_folder_id": new_folder_id})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-def copy_file(drive_service, file_id, file_name, new_parent_id):
-    """Copy a single file to a new parent folder"""
-    file_metadata = {
-        "name": file_name,
-        "parents": [new_parent_id]
-    }
-    drive_service.files().copy(fileId=file_id, body=file_metadata).execute()
-
-def copy_subfolder(drive_service, old_folder_id, new_parent_id):
-    """Recursively copy a folder and its contents"""
-    old_folder = drive_service.files().get(fileId=old_folder_id, fields="name").execute()
-    new_folder_metadata = {
-        "name": old_folder["name"],
-        "mimeType": "application/vnd.google-apps.folder",
-        "parents": [new_parent_id]
-    }
-    new_folder = drive_service.files().create(body=new_folder_metadata, fields="id").execute()
-    new_folder_id = new_folder["id"]
-
-    # Get contents of old folder
-    results = drive_service.files().list(
-        q=f"'{old_folder_id}' in parents and trashed=false",
-        fields="files(id, name, mimeType)"
-    ).execute()
-    items = results.get("files", [])
-
-    # Copy each file or subfolder
-    for item in items:
-        if item["mimeType"] == "application/vnd.google-apps.folder":
-            copy_subfolder(drive_service, item["id"], new_folder_id)
-        else:
-            copy_file(drive_service, item["id"], item["name"], new_folder_id)
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)  # Fixed port to match your app
