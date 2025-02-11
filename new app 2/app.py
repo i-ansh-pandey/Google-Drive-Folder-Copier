@@ -38,10 +38,11 @@ flow = Flow.from_client_secrets_file(
     redirect_uri="http://127.0.0.1:8000/callback"  # FIXED to match your app
 )
 
+TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
 @app.route("/")
 def home():
     if "credentials" not in session:
-        return render_template("login.html")  # Show login page
+        return render_template("login.html", template_folder=TEMPLATE_DIR)  # Show login page
     return redirect(url_for("list_folders"))
 
 @app.route("/login")
