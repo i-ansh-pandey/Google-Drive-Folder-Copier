@@ -13,7 +13,7 @@ app = Flask(__name__)
 app.secret_key = "your_secret_key"  # Change this for security 
 
 # Google OAuth Config
-CLIENT_SECRETS_FILE = "credentials.json"
+# CLIENT_SECRETS_FILE = "credentials.json"
 SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 # OAuth flow
