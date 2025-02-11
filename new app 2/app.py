@@ -27,6 +27,7 @@ def home():
     if "credentials" not in session:
         return render_template("login.html")  # Show login page
     return redirect(url_for("list_folders"))
+    return "Google Drive Folder Copier is running!"
 
 
 @app.route("/login")
