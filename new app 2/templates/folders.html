@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Drive Folders</title>
+</head>
+<body>
+    <h1>Your Google Drive Folders</h1>
+    <ul>
+        {% for folder in folders %}
+            <li>
+                <a href="{{ folder['webViewLink'] }}" target="_blank">{{ folder['name'] }}</a>
+                <button onclick="copyFolder('folder[',']')">Copy</button>
+            </li>
+        {% endfor %}
+    </ul>
+
+    <script>
+        function copyFolder(folderId) {
+            fetch(`/copy-folder/${folderId}`, {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => alert('Error copying folder'));
+        }
+    </script>
+</body>
+</html>
